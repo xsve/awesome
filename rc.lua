@@ -67,7 +67,11 @@ myawesomemenu = {
 }
 
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    { "open terminal", terminal }
+                                    { "open terminal", terminal },
+                                    { "Thunderbird", "/opt/thunderbird/thunderbird" },
+                                    { "EclipseRD", "/opt/eclipserd/eclipse/eclipse" },
+                                    { "Dropbox", "/afs/ericpol.int/home/x/s/xsve/home/.dropbox-dist/dropboxd start"},
+                                    { "Shutdown", "gnome-session-save --shutdown-dialog" }
                                   }
                         })
 
