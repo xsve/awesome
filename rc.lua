@@ -7,12 +7,12 @@
 require("awful")
 require("awful.autofocus")
 require("awful.rules")
-require("awful.titlebar")
-require("awesome")
-require("client")
-require("screen")
-require("freedesktop.utils")
-require("freedesktop.menu")
+--require("awful.titlebar")
+--require("awesome")
+--require("client")
+--require("screen")
+--require("freedesktop.utils")
+--require("freedesktop.menu")
 -- Theme handling library
 require("beautiful")
 -- Notification library
