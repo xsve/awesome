@@ -7,6 +7,12 @@
 require("awful")
 require("awful.autofocus")
 require("awful.rules")
+require("awful.titlebar")
+require("awesome")
+require("client")
+require("screen")
+require("freedesktop.utils")
+require("freedesktop.menu")
 -- Theme handling library
 require("beautiful")
 -- Notification library
@@ -20,6 +26,372 @@ beautiful.init("/usr/share/awesome/themes/default/theme.lua")
 terminal = "gnome-terminal"
 editor = os.getenv("EDITOR") or "nano"
 editor_cmd = terminal .. " -e " .. editor
+
+--{{{ Run or raise
+--- Spawns cmd if no client can be found matching properties
+-- If such a client can be found, pop to first tag where it is visible, and give it focus
+-- @param cmd the command to execute
+-- @param properties a table of properties to match against clients.  Possible entries: any properties of the client object
+function run_or_raise(cmd, properties)
+    local clients = client.get()
+    local focused = awful.client.next(0)
+    local findex = 0
+    local matched_clients = {}
+    local n = 0
+
+    -- Returns true if all pairs in table1 are present in table2
+    function match (table1, table2)
+        for k, v in pairs(table1) do
+            if table2[k] ~= v and not table2[k]:find(v) then
+                return false
+            end
+        end
+        return true
+    end
+
+    for i, c in pairs(clients) do
+        --make an array of matched clients
+        if match(properties, c) then
+            n = n + 1
+            matched_clients[n] = c
+            if c == focused then
+                findex = n
+            end
+        end
+    end
+    if n > 0 then
+        local c = matched_clients[1]
+        -- if the focused window matched switch focus to next in list
+        if 0 < findex and findex < n then
+            c = matched_clients[findex+1]
+        end
+        local ctags = c:tags()
+        if table.getn(ctags) == 0 then
+            -- ctags is empty, show client on current tag
+            local curtag = awful.tag.selected()
+            awful.client.movetotag(curtag, c)
+        else
+            -- Otherwise, pop to first tag client is visible on
+            awful.tag.viewonly(ctags[1])
+        end
+        -- And then focus the client
+        if client.focus == c then
+            c:tags({})
+        else
+            client.focus = c
+            c:raise()
+        end
+        return
+    end
+    awful.util.spawn(cmd, false)
+end
+--}}}
+
+
+--{{{ Data serialisation helpers
+function client_name(c)
+    local cls = c.class or ""
+    local inst = c.instance or ""
+	local role = c.role or ""
+	local ctype = c.type or ""
+	return cls..":"..inst..":"..role..":"..ctype
+end
+
+-- where can be 'left' 'right' 'center' nil
+function client_snap(c, where, geom)
+    local sg = screen[c.screen].geometry
+    local cg = geom or c:geometry()
+    local cs = c:struts()
+    cs['left'] = 0
+    cs['top'] = 0
+    cs['bottom'] = 0
+    cs['right'] = 0
+    if where == 'right' then
+        cg.x = sg.width - cg.width
+        cs[where] = cg.width
+        c:struts(cs)
+        c:geometry(cg)
+    elseif where == 'left' then
+        cg.x = 0
+        cs[where] = cg.width
+        c:struts(cs)
+        c:geometry(cg)
+    elseif where == 'bottom' then
+        awful.placement.centered(c)
+        cg = c:geometry()
+        cg.y = sg.height - cg.height - beautiful.wibox_bottom_height
+        cs[where] = cg.height + beautiful.wibox_bottom_height
+        c:struts(cs)
+        c:geometry(cg)
+    elseif where == nil then
+        c:struts(cs)
+        c:geometry(cg)
+    elseif where == 'center' then
+        c:struts(cs)
+        awful.placement.centered(c)
+    else
+        return
+    end
+end
+
+function save_geometry(c, g)
+	myrc.memory.set("geometry", client_name(c), g)
+    if g ~= nil then
+        c:geometry(g)
+    end
+end
+
+function save_floating(c, f)
+	myrc.memory.set("floating", client_name(c), f)
+    awful.client.floating.set(c, f)
+end
+
+function save_titlebar(c, val)
+	myrc.memory.set("titlebar", client_name(c), val)
+	if val == true then
+		awful.titlebar.add(c, { modkey = modkey })
+	elseif val == false then
+		awful.titlebar.remove(c)
+	end
+	return val
+end
+
+function get_titlebar(c, def)
+	return myrc.memory.get("titlebar", client_name(c), def)
+end
+
+function save_tag(c, tag)
+	local tn = "none"
+	if tag then tn = tag.name end
+	myrc.memory.set("tags", client_name(c), tn)
+	if tag ~= nil and tag ~= awful.tag.selected() then 
+		awful.client.movetotag(tag, c) 
+	end
+end
+
+function get_tag(c, def)
+	local tn = myrc.memory.get("tags", client_name(c), def)
+	return myrc.tagman.find(tn)
+end
+
+function save_dockable(c, val)
+	myrc.memory.set("dockable", client_name(c), val)
+    awful.client.dockable.set(c, val)
+end
+
+function get_dockable(c, def)
+	return myrc.memory.get("dockable", client_name(c), def)
+end
+
+function save_hor(c, val)
+	myrc.memory.set("maxhor", client_name(c), val)
+    c.maximized_horizontal = val
+end
+
+function get_hor(c, def)
+	return myrc.memory.get("maxhor", client_name(c), def)
+end
+
+function save_vert(c, val)
+	myrc.memory.set("maxvert", client_name(c), val)
+    c.maximized_vertical = val
+end
+
+function get_vert(c, def)
+	return myrc.memory.get("maxvert", client_name(c), def)
+end
+
+function save_snap(c, val)
+	myrc.memory.set("snap", client_name(c), val)
+    client_snap(c, val)
+end
+
+function get_snap(c, def)
+	return myrc.memory.get("snap", client_name(c), def)
+end
+
+function save_hidden(c, val)
+	myrc.memory.set("hidden", client_name(c), val)
+    c.skip_taskbar = val
+end
+
+function get_hidden(c, def)
+	return myrc.memory.get("hidden", client_name(c), def)
+end
+
+function get_border(c, def)
+	return myrc.memory.get("border", client_name(c), def)
+end
+
+function get_layout_border(c)
+    if awful.client.floating.get(c) == false and 
+        awful.layout.get() == awful.layout.suit.max
+    then
+        return 0
+    else
+        return get_border(c, beautiful.border_width)
+    end
+end
+
+function save_border(c, val)
+    myrc.memory.set("border", client_name(c), val)
+    c.border_width = get_layout_border(c)
+end
+--}}}
+
+-- Menu helpers--{{{
+mymenu = nil
+function menu_hide()
+    if mymenu ~= nil then
+        mymenu:hide()
+        mymenu = nil
+    end
+end
+
+function menu_current(menu, args)
+    if mymenu ~= nil and mymenu ~= menu then
+        mymenu:hide()
+    end
+    mymenu = menu
+    mymenu:show(args)
+    return mymenu
+end
+
+function client_contex_menu(c)
+    local mp = mouse.coords()
+    local menupos = {x = mp.x-1*beautiful.menu_width/3, y = mp.y}
+
+    local menuitmes = {
+        {"               ::: "..c.class.." :::" ,nil,nil}
+        ,
+
+        {"&Q Kill", function () 
+            c:kill()
+        end},
+
+        {"",nil,nil}
+        ,
+
+        {"&F Floating", {
+            { "&Enable", function () 
+                save_floating(c, true)
+            end},
+            { "&Disable", function () 
+                save_floating(c, false)
+            end}
+        }},
+
+        {"&T Titlebar", {
+            { "&Enable" , function () 
+                save_titlebar(c, true)
+            end},
+
+            {"&Disable", function () 
+                save_titlebar(c, false)
+            end},
+        }},
+
+        {"&G Geometry", {
+            { "&Save" , function () 
+                save_geometry(c, c:geometry())
+            end},
+
+            {"&Clear", function () 
+                save_geometry(c, nil)
+            end},
+        }},
+
+        {"&V Fullscreen vert", {
+            {"&Enable", function () 
+                save_vert(c, true) 
+            end},
+            {"&Disable" , function () 
+                save_vert(c, false) 
+            end},
+        }},
+
+        {"&H Fullscreen hor", {
+            {"&Enable", function () 
+                save_hor(c, true) 
+            end},
+            {"&Disable" , function () 
+                save_hor(c, false) 
+            end},
+        }},
+
+        {"&S Snap", {
+            { "&Center", function () 
+                save_snap(c, 'center')
+            end},
+
+            {"&Right", function () 
+                save_snap(c, 'right')
+            end},
+
+            {"&Left", function () 
+                save_snap(c, 'left')
+            end},
+
+            {"&Bottom", function () 
+                save_snap(c, 'bottom')
+            end},
+
+            {"&Off", function () 
+                save_snap(c, nil)
+            end},
+        }},
+
+        {"&B Border", {
+            { "&None", function () 
+                save_border(c, 0)
+            end},
+
+            {"&One", function () 
+                save_border(c, 1)
+            end},
+
+            {"&Default", function () 
+                save_border(c, nil)
+            end},
+        }},
+
+        {"&S Stick", {
+            { "To &this tag", 
+            function () 
+                local t = awful.tag.selected()
+                save_tag(c, t) 
+                naughty.notify({text = "Client " .. c.name .. " has been sticked to tag " .. t.name}) 
+            end}, 
+
+            {"To &none", function () 
+                save_tag(c, nil) 
+                naughty.notify({text = "Client " .. c.name .. " has been unsticked from tag"}) 
+            end},
+        }},
+
+        { "&I Hidden", {
+            {"&Enable", function () 
+                save_hidden(c, true) 
+            end},
+            {"&Disable" , function () 
+                save_hidden(c, false) 
+            end},
+        }},
+
+        {"&R Rename", function () 
+            awful.prompt.run(
+            { prompt = "Rename client: " }, 
+            mypromptbox[mouse.screen].widget, 
+            function(n) 
+                awful.client.property.set(c,"label", n) 
+            end,
+            awful.completion.bash,
+            awful.util.getdir("cache") .. "/rename")
+        end},
+    } 
+
+    return awful.menu( { items = menuitmes, height = theme.menu_context_height } ), menupos
+end--}}}
 
 -- Default modkey.
 -- Usually, Mod4 is the key with a logo between Control and Alt.
