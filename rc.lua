@@ -18,6 +18,16 @@ require("beautiful")
 -- Notification librarye
 require("naughty")
 
+
+_awesome_quit = awesome.quit
+awesome.quit = function()
+    if os.getenv("DESKTOP_SESSION") == "awesome-gnome" then
+       os.execute("/usr/bin/gnome-session-quit")
+    else
+        _awesome_quit()
+    end
+end
+
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
 beautiful.init(awful.util.getdir("config") .. "/themes/zenburn/theme.lua")
@@ -430,7 +440,7 @@ tags = {
     layouts[1], layouts[1], layouts[6],
     layouts[1], layouts[9],
     layouts[2], layouts[1],
-    layouts[12], layouts[3],
+    layouts[9], layouts[2],
 }}
 for s = 1, screen.count() do
     tags[s] = awful.tag(tags.names, s, tags.layout)
@@ -452,6 +462,7 @@ mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesom
                                     { "open terminal", terminal },
                                     { "Thunderbird", "/opt/thunderbird/thunderbird" },
                                     { "EclipseRD", "/opt/eclipserd/eclipse/eclipse" },
+                                    { "Pull BK", "gnome-terminal --working-directory='bk' -e \"zsh -c 'cd $HOME/bk;  git checkout config/mongoid.yml; killall ruby; [[ -s \"$HOME/.rvm/scripts/rvm\" ]] && source \"$HOME/.rvm/scripts/rvm\"; git pull; rvm use 2.0.0; bundle --verbose;  cat ntar.mongoid.yml > config/mongoid.yml; rails s; exec bash'\" "},
                                     { "Dropbox", "/afs/ericpol.int/home/x/s/xsve/home/.dropbox-dist/dropboxd start"},
                                     { "Shutdown", "gnome-session-save --shutdown-dialog" }
                                   }
@@ -704,8 +715,6 @@ awful.rules.rules = {
     { rule = { class = "gimp" },
       properties = { floating = true } },
     -- Set Firefox to always map on tags number 2 of screen 1.
-    -- { rule = { class = "Firefox" },
-    --   properties = { tag = tags[1][2] } },
      { rule = { class = "Firefox" },
         properties = { tag = tags[1][1] } },
      { rule = { class = "Gvim" },
@@ -718,12 +727,12 @@ awful.rules.rules = {
         properties = { tag = tags[1][1], maximized_vertical = true, maximized_horizontal = true } },
      { rule = { class = "pinentry" },
         properties = { floating = true } },
-     { rule = { class = "Skype" },
-       properties = { tag = tags[1][5] } },
+     --{ rule = { class = "Skype" },
+     --  properties = { tag = tags[1][9] } },
      { rule = { class = "Thunderbird" },
-        properties = { tag = tags[1][5] } },
-     { rule = { class = "Tomboy" },
         properties = { tag = tags[1][8] } },
+     --{ rule = { class = "Tomboy" },
+     --   properties = { tag = tags[1][8] } },
      { rule = { class = "URxvt" },
        properties = { size_hints_honor = false } },
      { rule = { class = "Vncviewer" },
@@ -744,12 +753,12 @@ client.add_signal("manage", function (c, startup)
     -- awful.titlebar.add(c, { modkey = modkey })
 
     -- Enable sloppy focus
-    c:add_signal("mouse::enter", function(c)
-        if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
-            and awful.client.focus.filter(c) then
-            client.focus = c
-        end
-    end)
+    --c:add_signal("mouse::enter", function(c)
+    --    if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
+    --        and awful.client.focus.filter(c) then
+    --        client.focus = c
+    --    end
+    --end)
 
     if not startup then
         -- Set the windows at the slave,
