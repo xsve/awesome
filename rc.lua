@@ -15,12 +15,12 @@ require("awful.rules")
 --require("freedesktop.menu")
 -- Theme handling library
 require("beautiful")
--- Notification library
+-- Notification librarye
 require("naughty")
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
-beautiful.init("/usr/share/awesome/themes/default/theme.lua")
+beautiful.init(awful.util.getdir("config") .. "/themes/zenburn/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
 terminal = "gnome-terminal"
@@ -164,8 +164,8 @@ function save_tag(c, tag)
 	local tn = "none"
 	if tag then tn = tag.name end
 	myrc.memory.set("tags", client_name(c), tn)
-	if tag ~= nil and tag ~= awful.tag.selected() then 
-		awful.client.movetotag(tag, c) 
+	if tag ~= nil and tag ~= awful.tag.selected() then
+		awful.client.movetotag(tag, c)
 	end
 end
 
@@ -224,7 +224,7 @@ function get_border(c, def)
 end
 
 function get_layout_border(c)
-    if awful.client.floating.get(c) == false and 
+    if awful.client.floating.get(c) == false and
         awful.layout.get() == awful.layout.suit.max
     then
         return 0
@@ -265,7 +265,7 @@ function client_contex_menu(c)
         {"               ::: "..c.class.." :::" ,nil,nil}
         ,
 
-        {"&Q Kill", function () 
+        {"&Q Kill", function ()
             c:kill()
         end},
 
@@ -273,122 +273,122 @@ function client_contex_menu(c)
         ,
 
         {"&F Floating", {
-            { "&Enable", function () 
+            { "&Enable", function ()
                 save_floating(c, true)
             end},
-            { "&Disable", function () 
+            { "&Disable", function ()
                 save_floating(c, false)
             end}
         }},
 
         {"&T Titlebar", {
-            { "&Enable" , function () 
+            { "&Enable" , function ()
                 save_titlebar(c, true)
             end},
 
-            {"&Disable", function () 
+            {"&Disable", function ()
                 save_titlebar(c, false)
             end},
         }},
 
         {"&G Geometry", {
-            { "&Save" , function () 
+            { "&Save" , function ()
                 save_geometry(c, c:geometry())
             end},
 
-            {"&Clear", function () 
+            {"&Clear", function ()
                 save_geometry(c, nil)
             end},
         }},
 
         {"&V Fullscreen vert", {
-            {"&Enable", function () 
-                save_vert(c, true) 
+            {"&Enable", function ()
+                save_vert(c, true)
             end},
-            {"&Disable" , function () 
-                save_vert(c, false) 
+            {"&Disable" , function ()
+                save_vert(c, false)
             end},
         }},
 
         {"&H Fullscreen hor", {
-            {"&Enable", function () 
-                save_hor(c, true) 
+            {"&Enable", function ()
+                save_hor(c, true)
             end},
-            {"&Disable" , function () 
-                save_hor(c, false) 
+            {"&Disable" , function ()
+                save_hor(c, false)
             end},
         }},
 
         {"&S Snap", {
-            { "&Center", function () 
+            { "&Center", function ()
                 save_snap(c, 'center')
             end},
 
-            {"&Right", function () 
+            {"&Right", function ()
                 save_snap(c, 'right')
             end},
 
-            {"&Left", function () 
+            {"&Left", function ()
                 save_snap(c, 'left')
             end},
 
-            {"&Bottom", function () 
+            {"&Bottom", function ()
                 save_snap(c, 'bottom')
             end},
 
-            {"&Off", function () 
+            {"&Off", function ()
                 save_snap(c, nil)
             end},
         }},
 
         {"&B Border", {
-            { "&None", function () 
+            { "&None", function ()
                 save_border(c, 0)
             end},
 
-            {"&One", function () 
+            {"&One", function ()
                 save_border(c, 1)
             end},
 
-            {"&Default", function () 
+            {"&Default", function ()
                 save_border(c, nil)
             end},
         }},
 
         {"&S Stick", {
-            { "To &this tag", 
-            function () 
+            { "To &this tag",
+            function ()
                 local t = awful.tag.selected()
-                save_tag(c, t) 
-                naughty.notify({text = "Client " .. c.name .. " has been sticked to tag " .. t.name}) 
-            end}, 
+                save_tag(c, t)
+                naughty.notify({text = "Client " .. c.name .. " has been sticked to tag " .. t.name})
+            end},
 
-            {"To &none", function () 
-                save_tag(c, nil) 
-                naughty.notify({text = "Client " .. c.name .. " has been unsticked from tag"}) 
+            {"To &none", function ()
+                save_tag(c, nil)
+                naughty.notify({text = "Client " .. c.name .. " has been unsticked from tag"})
             end},
         }},
 
         { "&I Hidden", {
-            {"&Enable", function () 
-                save_hidden(c, true) 
+            {"&Enable", function ()
+                save_hidden(c, true)
             end},
-            {"&Disable" , function () 
-                save_hidden(c, false) 
+            {"&Disable" , function ()
+                save_hidden(c, false)
             end},
         }},
 
-        {"&R Rename", function () 
+        {"&R Rename", function ()
             awful.prompt.run(
-            { prompt = "Rename client: " }, 
-            mypromptbox[mouse.screen].widget, 
-            function(n) 
-                awful.client.property.set(c,"label", n) 
+            { prompt = "Rename client: " },
+            mypromptbox[mouse.screen].widget,
+            function(n)
+                awful.client.property.set(c,"label", n)
             end,
             awful.completion.bash,
             awful.util.getdir("cache") .. "/rename")
         end},
-    } 
+    }
 
     return awful.menu( { items = menuitmes, height = theme.menu_context_height } ), menupos
 end--}}}
@@ -421,14 +421,16 @@ layouts =
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {
-  names = { "www", "gedit", "IDE", "email", 
-            "fs", "terms", "video", 
-            "IM", "misc",
+  names = { "www", "gedit", "terms",
+            "IDE", "@",
+            "fs", "float",
+            "misc", "IM",
   },
   layout = {
-    layouts[1], layouts[1], layouts[1], layouts[9],
-    layouts[2], layouts[1], layouts[12],
-    layouts[3], layouts[12],
+    layouts[1], layouts[1], layouts[6],
+    layouts[1], layouts[9],
+    layouts[2], layouts[1],
+    layouts[12], layouts[3],
 }}
 for s = 1, screen.count() do
     tags[s] = awful.tag(tags.names, s, tags.layout)
@@ -525,7 +527,7 @@ for s = 1, screen.count() do
                                           end, mytasklist.buttons)
 
     -- Create the wibox
-    mywibox[s] = awful.wibox({ position = "top", screen = s })
+    mywibox[s] = awful.wibox({ position = "bottom", screen = s })
     -- Add widgets to the wibox - order matters
     mywibox[s].widgets = {
         {
@@ -704,6 +706,34 @@ awful.rules.rules = {
     -- Set Firefox to always map on tags number 2 of screen 1.
     -- { rule = { class = "Firefox" },
     --   properties = { tag = tags[1][2] } },
+     { rule = { class = "Firefox" },
+        properties = { tag = tags[1][1] } },
+     { rule = { class = "Gvim" },
+       properties = { size_hints_honor = false } },
+     { rule = { class = "KeePass.exe" },
+        properties = { maximized_vertical = true, maximized_horizontal = true } },
+     { rule = { class = "Mirage" },
+        properties = { maximized_vertical = true, maximized_horizontal = true } },
+     { rule = { class = "Navigator" },
+        properties = { tag = tags[1][1], maximized_vertical = true, maximized_horizontal = true } },
+     { rule = { class = "pinentry" },
+        properties = { floating = true } },
+     { rule = { class = "Skype" },
+       properties = { tag = tags[1][5] } },
+     { rule = { class = "Thunderbird" },
+        properties = { tag = tags[1][5] } },
+     { rule = { class = "Tomboy" },
+        properties = { tag = tags[1][8] } },
+     { rule = { class = "URxvt" },
+       properties = { size_hints_honor = false } },
+     { rule = { class = "Vncviewer" },
+        properties = { maximized_vertical = true, maximized_horizontal = true } },
+     { rule = { class = "XMind" },
+        properties = { maximized_vertical = true, maximized_horizontal = true } },
+     { rule = { class = "XTerm" },
+        properties = { size_hints_honor = false } },
+     { rule = { instance = "XTerm-logs" },
+        properties = { tag = tags[1][9] } },
 }
 -- }}}
 
@@ -738,5 +768,8 @@ client.add_signal("focus", function(c) c.border_color = beautiful.border_focus e
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 
 --os.execute("gnome-settings-daemon")
+--os.execute("GnoMenu.py run-in-tray")
+--os.setenv("_JAVA_AWT_WM_NONREPARENTING=1")
+
 -- }}}
 
