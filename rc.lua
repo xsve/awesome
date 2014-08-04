@@ -18,7 +18,7 @@ require("beautiful")
 -- Notification librarye
 require("naughty")
 
-
+-- quit script
 _awesome_quit = awesome.quit
 awesome.quit = function()
     if os.getenv("DESKTOP_SESSION") == "awesome-gnome" then
@@ -544,7 +544,7 @@ for s = 1, screen.count() do
         {
             mylauncher,
             mytaglist[s],
-            mysystray,
+            --mysystray,
             mypromptbox[s],
             layout = awful.widget.layout.horizontal.leftright
         },
@@ -779,6 +779,8 @@ client.add_signal("unfocus", function(c) c.border_color = beautiful.border_norma
 --os.execute("gnome-settings-daemon")
 --os.execute("GnoMenu.py run-in-tray")
 --os.setenv("_JAVA_AWT_WM_NONREPARENTING=1")
+
+os.execute("gnome-panel")
 
 -- }}}
 
