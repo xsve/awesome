@@ -8,9 +8,9 @@ require("awful")
 require("awful.autofocus")
 require("awful.rules")
 --require("awful.titlebar")
---require("awesome")
---require("client")
---require("screen")
+require("awesome")
+require("client")
+require("screen")
 --require("freedesktop.utils")
 --require("freedesktop.menu")
 -- Theme handling library
@@ -780,7 +780,7 @@ client.add_signal("unfocus", function(c) c.border_color = beautiful.border_norma
 --os.execute("GnoMenu.py run-in-tray")
 --os.setenv("_JAVA_AWT_WM_NONREPARENTING=1")
 
-os.execute("gnome-panel")
+--os.execute("gnome-panel")
 
 -- }}}
 
