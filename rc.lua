@@ -432,15 +432,15 @@ layouts =
 -- Define a tag table which hold all screen tags.
 tags = {
   names = { "www", "gedit", "terms",
-            "IDE", "@",
+            "IDE", "fib",
             "fs", "float",
-            "misc", "IM",
+            "@", "IM",
   },
   layout = {
     layouts[1], layouts[1], layouts[6],
     layouts[1], layouts[9],
     layouts[2], layouts[1],
-    layouts[9], layouts[2],
+    layouts[9], layouts[9],
 }}
 for s = 1, screen.count() do
     tags[s] = awful.tag(tags.names, s, tags.layout)
@@ -772,6 +772,9 @@ client.add_signal("manage", function (c, startup)
         end
     end
 end)
+
+client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end) --connect_signal in 3.5!!!
+client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end) --connect_signal in 3.5!!!
 
 client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
