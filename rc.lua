@@ -517,6 +517,32 @@ mytasklist.buttons = awful.util.table.join(
                                               awful.client.focus.byidx(-1)
                                               if client.focus then client.focus:raise() end
                                           end))
+--[[
+-- load the KB widget code
+local layout_indicator = require("keyboard-layout-indicator")
+
+-- define your layouts
+kbdcfg = layout_indicator({
+    layouts = {
+        --{name="dv",  layout="de",  variant="dvorak"},
+        {name="pl",  layout="pl",  variant=nil},
+        {name="ru",  layout="ru",  variant=nil}
+    }
+})
+
+-- optionally add a middle-mouse binding to set a custom layout:
+kbdcfg.widget:buttons(awful.util.table.join(
+    kbdcfg.widget:buttons(),
+    awful.button({ }, 2, 
+        function ()
+            awful.prompt.run(
+                { prompt="Run: ", text="setxkbmap " },
+                mypromptbox[mouse.screen].widget,
+                function(cmd) kbdcfg:setcustom(cmd) end )
+        end)
+))
+
+]]
 
 for s = 1, screen.count() do
     -- Create a promptbox for each screen
