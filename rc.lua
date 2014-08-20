@@ -799,8 +799,14 @@ client.add_signal("manage", function (c, startup)
     end
 end)
 
-client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end) --connect_signal in 3.5!!!
-client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end) --connect_signal in 3.5!!!
+client.add_signal("focus", function(c)
+                              c.border_color = beautiful.border_focus
+                              c.opacity = 1
+                           end)
+client.add_signal("unfocus", function(c)
+                                c.border_color = beautiful.border_normal
+                                c.opacity = 0.82
+                             end)
 
 client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
@@ -811,6 +817,7 @@ client.add_signal("unfocus", function(c) c.border_color = beautiful.border_norma
 
 --os.execute("gnome-panel")
 
+os.execute("xcompmgr &")
 os.execute("urxvtd -q -o -f &")
 -- }}}
 
