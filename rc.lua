@@ -33,7 +33,7 @@ end
 beautiful.init(awful.util.getdir("config") .. "/themes/zenburn/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "gnome-terminal"
+terminal = "urxvtc"
 editor = os.getenv("EDITOR") or "nano"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -811,5 +811,6 @@ client.add_signal("unfocus", function(c) c.border_color = beautiful.border_norma
 
 --os.execute("gnome-panel")
 
+os.execute("urxvtd -q -o -f &")
 -- }}}
 
