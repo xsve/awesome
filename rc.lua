@@ -410,6 +410,77 @@ end--}}}
 -- However, you can use another modifier like Mod1, but it may interact with others.
 modkey = "Mod4"
 
+
+-- Delightful widgets
+require('delightful.widgets.battery')
+require('delightful.widgets.cpu')
+require('delightful.widgets.datetime')
+--require('delightful.widgets.imap')
+require('delightful.widgets.memory')
+require('delightful.widgets.network')
+require('delightful.widgets.pulseaudio')
+--require('delightful.widgets.weather')
+
+-- Which widgets to install?
+-- This is the order the widgets appear in the wibox.
+install_delightful = {
+--    delightful.widgets.network,
+    delightful.widgets.cpu,    
+    delightful.widgets.memory,
+--    delightful.widgets.weather,
+--    delightful.widgets.imap,
+--    delightful.widgets.battery,
+    delightful.widgets.pulseaudio,
+    delightful.widgets.datetime
+}
+
+-- Widget configuration
+delightful_config = {
+    [delightful.widgets.cpu] = {
+        command = 'gnome-system-monitor',
+    },
+--    [delightful.widgets.imap] = {
+--        {
+--            user      = 'myuser',
+--            password  = 'mypassword',
+--            host      = 'mail.example.com',
+--            ssl       = true,
+--            mailboxes = { 'INBOX', 'awesome' },
+--            command   = 'evolution -c mail',
+--        },
+--    },
+    [delightful.widgets.memory] = {
+        command = 'gnome-system-monitor',
+    },
+--    [delightful.widgets.weather] = {
+--        {
+--            city = 'Helsinki',
+--            command = 'gnome-www-browser http://ilmatieteenlaitos.fi/saa/Helsinki',
+--        },
+--    },
+    [delightful.widgets.pulseaudio] = {
+        mixer_command = 'gnome-volume-control',
+    },
+}
+
+-- Prepare the container that is used when constructing the wibox
+local delightful_container = { widgets = {}, icons = {} }
+if install_delightful then
+    for _, widget in pairs(awful.util.table.reverse(install_delightful)) do
+        local config = delightful_config and delightful_config[widget]     
+        local widgets, icons = widget:load(config)                    
+        if widgets then
+            if not icons then
+                icons = {}
+            end
+            table.insert(delightful_container.widgets, awful.util.table.reverse(widgets))
+            table.insert(delightful_container.icons,   awful.util.table.reverse(icons))
+        end
+    end
+end
+
+
+
 -- Table of layouts to cover with awful.layout.inc, order matters.
 layouts =
 {
@@ -566,20 +637,30 @@ for s = 1, screen.count() do
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "bottom", screen = s })
     -- Add widgets to the wibox - order matters
-    mywibox[s].widgets = {
-        {
-            mylauncher,
-            mytaglist[s],
-            --mysystray,
-            mypromptbox[s],
-            layout = awful.widget.layout.horizontal.leftright
-        },
-        mylayoutbox[s],
-        mytextclock,
-        --s == 1 and mysystray or nil,
-        mytasklist[s],
-        layout = awful.widget.layout.horizontal.rightleft
-    }
+local widgets_front = {
+    {
+        mylauncher,
+        mytaglist[s],
+        mypromptbox[s],
+        layout = awful.widget.layout.horizontal.leftright
+    },
+    mylayoutbox[s],
+}
+local widgets_middle = {}
+for delightful_container_index, delightful_container_data in pairs(delightful_container.widgets) do
+    for widget_index, widget_data in pairs(delightful_container_data) do
+        table.insert(widgets_middle, widget_data)
+        if delightful_container.icons[delightful_container_index] and delightful_container.icons[delightful_container_index][widget_index] then
+            table.insert(widgets_middle, delightful_container.icons[delightful_container_index][widget_index])
+        end
+    end
+end
+local widgets_end = {
+    s == 1 and mysystray or nil,
+    mytasklist[s],
+    layout = awful.widget.layout.horizontal.rightleft
+}
+mywibox[s].widgets = awful.util.table.join(widgets_front, widgets_middle, widgets_end)
 end
 -- }}}
 
