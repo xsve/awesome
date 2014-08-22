@@ -641,12 +641,14 @@ local widgets_front = {
     {
         mylauncher,
         mytaglist[s],
+        s == 1 and mysystray or nil,
         mypromptbox[s],
         layout = awful.widget.layout.horizontal.leftright
     },
     mylayoutbox[s],
 }
-local widgets_middle = {}
+local widgets_middle = {
+}
 for delightful_container_index, delightful_container_data in pairs(delightful_container.widgets) do
     for widget_index, widget_data in pairs(delightful_container_data) do
         table.insert(widgets_middle, widget_data)
@@ -655,11 +657,12 @@ for delightful_container_index, delightful_container_data in pairs(delightful_co
         end
     end
 end
+
 local widgets_end = {
-    s == 1 and mysystray or nil,
     mytasklist[s],
     layout = awful.widget.layout.horizontal.rightleft
 }
+
 mywibox[s].widgets = awful.util.table.join(widgets_front, widgets_middle, widgets_end)
 end
 -- }}}
